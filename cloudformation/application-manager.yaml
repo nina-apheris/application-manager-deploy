@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Launch Application Manager EC2 instance from a custom AMI"
+
+Parameters:
+
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: "Select your EC2 KeyPair to SSH into the instance"
+
+  InstanceType:
+    Type: String
+    Default: t3.medium
+    AllowedValues:
+    - t3.medium
+    - t3.large
+    - t3.xlarge
+    Description: "EC2 instance type for the Application Manager"
+
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: "VPC to launch the instance into"
+
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: "Subnet within the VPC to launch the instance into"
+
+Resources:
+  ApplicationManagerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group for Application Manager"
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 8000
+        ToPort: 8000
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: application-manager-sg
+
+  ApplicationManagerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-039fba1a44139d59f
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !Ref SubnetId
+      IamInstanceProfile: ApplicationManagerProfile
+      SecurityGroupIds:
+      - !Ref ApplicationManagerSG
+      Tags:
+      - Key: Name
+        Value: application-manager
+
+Outputs:
+  PublicIP:
+    Description: "Public IP address of the EC2 instance"
+    Value: !GetAtt ApplicationManagerInstance.PublicIp
+
+  SSHCommand:
+    Description: "Example SSH command"
+    Value: !Sub "ssh -i ~/.ssh/${KeyName}.pem ubuntu@${ApplicationManagerInstance.PublicIp}"
+
+  AppURL:
+    Description: Application Manager web UI (port 8000)
+    Value: !Sub "http://${ApplicationManagerInstance.PublicIp}:8000"
+
+  HealthcheckURL:
+    Description: Healthcheck for the model server (port 8080)
+    Value: !Sub "http://${ApplicationManagerInstance.PublicIp}:8080/v2/health/ready"
