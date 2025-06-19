@@ -12,8 +12,7 @@ This project deploys the Application Manager AMI on AWS using a single-click Clo
 
 Click the link below to deploy:
 
-👉 [Launch in AWS (eu-central-1)](https://console.aws.amazon.com/cloudformation/home#/stacks/create/review?templateURL=https://application-manager-cf-templates.s3.eu-central-1.amazonaws.com/application-manager.yaml
-&stackName=apheris-application-manager&param_AmiId=ami-068e657c26a322e1b
+👉 [Launch in AWS (eu-central-1)](https://console.aws.amazon.com/cloudformation/home#/stacks/create/review?templateURL=https://application-manager-cf-templates.s3.eu-central-1.amazonaws.com/application-manager.yaml&stackName=apheris-application-manager&param_AmiId=ami-068e657c26a322e1b
 )
 
 ## 📥 Parameters
