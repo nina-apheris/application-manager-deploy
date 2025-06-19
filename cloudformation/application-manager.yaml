@@ -43,28 +43,6 @@ Conditions:
 
 Resources:
 
-  ApplicationManagerRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: application-manager-ec2-role
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service: ec2.amazonaws.com
-          Action: sts:AssumeRole
-      Policies:
-      - PolicyName: ReadDockerTokenSSM
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-          - Effect: Allow
-            Action:
-            - ssm:GetParameter
-            - ssm:GetParameters
-            Resource: arn:aws:ssm:eu-central-1:049125108544:parameter/application-manager/docker-token
-
   ApplicationManagerSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
