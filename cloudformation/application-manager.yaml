@@ -3,6 +3,11 @@ Description: "Launch Application Manager EC2 instance from a custom AMI with SSM
 
 Parameters:
 
+  AmiId:
+    Type: String
+    Default: ami-068e657c26a322e1b
+    Description: "The AMI ID to use for the EC2 instance"
+
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
     Description: "Select your EC2 KeyPair to SSH into the instance"
@@ -22,6 +27,19 @@ Parameters:
   SubnetId:
     Type: AWS::EC2::Subnet::Id
     Description: "Subnet within the VPC to launch the instance into"
+
+  InstanceProfile:
+    Type: String
+    Description: "Name of an existing IAM instance profile with SSM read access"
+
+  ExistingSecurityGroupId:
+    Type: String
+    Default: ""
+    Description: "Optional: Provide an existing Security Group ID. Leave empty to create a new one."
+
+Conditions:
+
+  CreateSecurityGroup: !Equals [ !Ref ExistingSecurityGroupId, "" ]
 
 Resources:
 
@@ -47,12 +65,6 @@ Resources:
             - ssm:GetParameters
             Resource: arn:aws:ssm:eu-central-1:049125108544:parameter/application-manager/docker-token
 
-  ApplicationManagerProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Roles:
-      - !Ref ApplicationManagerRole
-
   ApplicationManagerSG:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -74,22 +86,21 @@ Resources:
   ApplicationManagerInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-068e657c26a322e1b
+      ImageId: !Ref AmiId
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
       SubnetId: !Ref SubnetId
-      IamInstanceProfile: !Ref ApplicationManagerProfile
+      IamInstanceProfile: !Ref InstanceProfile
       SecurityGroupIds:
-      - !Ref ApplicationManagerSG
+      - !If
+        - CreateSecurityGroup
+        - !Ref ApplicationManagerSG
+        - !Ref ExistingSecurityGroupId
       Tags:
       - Key: Name
         Value: application-manager
 
 Outputs:
-
-  PublicIP:
-    Description: "Public IP address of the EC2 instance"
-    Value: !GetAtt ApplicationManagerInstance.PublicIp
 
   SSHCommand:
     Description: "Example SSH command"
@@ -98,7 +109,3 @@ Outputs:
   AppURL:
     Description: Application Manager web UI (port 8000)
     Value: !Sub "http://${ApplicationManagerInstance.PublicIp}:8000"
-
-  HealthcheckURL:
-    Description: Healthcheck for the model server (port 8080)
-    Value: !Sub "http://${ApplicationManagerInstance.PublicIp}:8080/v2/health/ready"
