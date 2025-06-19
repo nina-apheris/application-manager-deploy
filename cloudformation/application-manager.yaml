@@ -9,11 +9,10 @@ Parameters:
 
   InstanceType:
     Type: String
-    Default: t3.medium
+    Default: t3.micro
     AllowedValues:
-    - t3.medium
-    - t3.large
-    - t3.xlarge
+    - t3.micro
+    - t2.micro
     Description: "EC2 instance type for the Application Manager"
 
   VpcId:
@@ -46,7 +45,7 @@ Resources:
   ApplicationManagerInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-039fba1a44139d59f
+      ImageId: ami-068e657c26a322e1b
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
       SubnetId: !Ref SubnetId
